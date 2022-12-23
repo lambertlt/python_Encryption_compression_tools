@@ -6,13 +6,12 @@ import time
 import tkinter.filedialog
 import re
 import random
+import windnd
 from tkinter import *
-from tkinterdnd2 import *
 from ttkbootstrap import *
 from ttkbootstrap.constants import *
 from Crypto.Cipher import AES
 from binascii import b2a_hex, a2b_hex
-from tkinter import messagebox
 
 
 # 这版 文件加密解密分块儿多组
@@ -23,18 +22,25 @@ class FileAES:
         self.mode = AES.MODE_ECB  # 操作模式选择ECB
         self.unicode = 'utf-8'  # 默认字符集
         self.compressPostfix = '.skj'
-        self.version = "V1.1"
         self.ui()
+
+    def dragged_files(self, _files):
+        if (len(_files) != 0):
+            print(1)
+            # print(_files)
+        # self.text.configure(state='normal')  # 打开锁
+        # self.text.delete('1.0', END)
+        # string_filename = ""
+        # for i in range(0, len(files)):
+        #     string_filename += str(files[i]) + "\n"
+        # self.text.insert(INSERT, "您选择的文件是：\n" + string_filename)
+        # self.text.configure(state='disabled')  # 上锁
 
     def ui(self):
         theme = ['vapor', 'solar', 'pulse', 'minty']
-        # style = Style(theme=theme[0])
-        # win = style.master
-        win = TkinterDnD.Tk()
-        win.title("内部加密 / 解密工具包 " + self.version)
-        win.resizable(width=False, height=False)
-        # win.minsize(560, 545) # 最小尺寸
-        # win.maxsize(560, 545) # 最大尺寸
+        style = Style(theme=theme[0])
+        win = style.master
+        win.title("内部加密 / 解密工具包")
         # sw = win.winfo_screenwidth()
         # sh = win.winfo_screenheight()
         # ww = 350
@@ -73,21 +79,8 @@ class FileAES:
         self.encrypt_string_value.grid(row=6, column=1, sticky="")  # 加密 input
         self.btn.grid(row=7, column=0, sticky="")  # 按钮选择文件
         self.btn1.grid(row=7, column=1, sticky="")  # 执行··
-        win.drop_target_register(DND_FILES)
-        win.dnd_bind('<<Drop>>', self.get_path)
+        # windnd.hook_dropfiles(win, func=dragged_files)
         win.mainloop()
-
-    def get_path(self, event):
-        self.file_names.clear()  # 清空列表
-        self.file_names += event.data.split(" ")
-        self.text.configure(state='normal')  # 打开锁
-        self.text.delete('1.0', END)
-        string_filename = ""
-        for i in range(0, len(self.file_names)):
-            self.file_names[i] = re.sub(r'{|}', '', self.file_names[i])
-            string_filename += self.file_names[i] + "\n"
-        self.text.insert(INSERT, "您选择的文件是：\n" + string_filename)
-        self.text.configure(state='disabled')  # 上锁
 
     def add_to_16(self, text):
         if len(text.encode(self.unicode)) % 16:
@@ -153,6 +146,7 @@ class FileAES:
 
     # 选取文件
     def select_file(self):
+        self.file_names
         self.file_names.clear()  # 清空列表
         self.file_names += list(
             tkinter.filedialog.askopenfilenames(title="选取要操作的文件"))
@@ -257,7 +251,7 @@ class FileAES:
         if len(self.file_names) > 0:
             # 判断压缩名称是否为空，为空制时间戳为包名
             if self.folder_name.get() == '':
-                self.folder_name.set(time.strftime("%Y.%m.%d-%H-%M-%S"))
+                self.folder_name.set(time.strftime("%Y.%m.%d %H:%M:%S"))
             self.zip_file_name = self.folder_name.get() + ".zip"
             self.zip_file_list = []
             self.zip_dir_list = []
@@ -281,7 +275,6 @@ class FileAES:
                     #     self.deciphering_folder(dirs_file_path, dirs_file_name,
                     #                             dirs)
                     self.deciphering_file(file_list, dirs)
-                    messagebox.showinfo('提示', '解压完成')
                 elif os.path.splitext(file_path)[1] == self.compressPostfix:
                     handler_type = 'deciphering'  # 解密
                     self.deciphering(file_path)
@@ -296,15 +289,14 @@ class FileAES:
                 self.my_zip_function(
                     os.path.join(self.zip_path, self.zip_file_name),
                     self.zip_file_list, self.zip_dir_list)
-                # self.my_traversal_zip_function(self.zip_file_name)
-                folders = os.path.join(self.zip_path,
-                                       os.path.splitext(self.zip_file_name)[0])
-                if not os.path.isdir(folders):
-                    os.makedirs(folders)
-                    for i in self.zip_file_list:
-                        shutil.move(i, folders)
-                        # os.remove(i)  # 删除加密后的中间文件
-                    messagebox.showinfo('提示', '压缩完成')
+            # self.my_traversal_zip_function(self.zip_file_name)
+            folders = os.path.join(self.zip_path,
+                                   os.path.splitext(self.zip_file_name)[0])
+            if not os.path.exists(folders):
+                os.makedirs(folders)
+                for i in self.zip_file_list:
+                    shutil.move(i, folders)
+                    # os.remove(i)  # 删除加密后的中间文件
         else:
             self.text.configure(state='normal')  # 打开锁
             self.text.delete('1.0', END)
