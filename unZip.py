@@ -237,7 +237,8 @@ class FileAES:
             if remainder < t:
                 break
             data = datas[start:end] if remainder >= t else datas[end:length]
-            arr.append(data)
+            if (len(data) > 0):
+                arr.append(data)
             start = end
             i += 1
         return arr
