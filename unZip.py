@@ -248,6 +248,9 @@ class FileAES:
         # 把密码进行补全，得到16、24或32位
         str = self.encrypt_string.get()
         length = len(str)
+        if length == 0:
+            messagebox.showinfo('提示', '请输入压缩密码')
+            return 0
         # 超出32位自动截取前32位
         self.keys = str.rjust(
             16, '1') if length > 0 and length < 16 else str.rjust(
@@ -257,6 +260,8 @@ class FileAES:
             # 判断压缩名称是否为空，为空制时间戳为包名
             if self.folder_name.get() == '':
                 self.folder_name.set(time.strftime("%Y.%m.%d-%H-%M-%S"))
+            else:
+                self.folder_name.set(self.folder_name.get().replace(' ', ''))
             self.zip_file_name = self.folder_name.get() + ".zip"
             self.zip_file_list = []
             self.zip_dir_list = []

@@ -135,7 +135,7 @@ class FileAES:
                     zip_obj.write(root)
                     for tmp_file in files:
                         # 拼接文件完整目录，不然只用文件名代码找不到文件
-                        tmp_file_path = os.path.join(root+'/', tmp_file)
+                        tmp_file_path = os.path.join(root + '/', tmp_file)
                         zip_obj.write(tmp_file_path)
 
     # 函数功能是遍历压缩文件中的所有文件
@@ -145,10 +145,10 @@ class FileAES:
 
     # 函数的功能是将压缩文件直接解压
     def my_unzip_function(self, zip_file_name, path):
-        with zipfile.ZipFile(os.path.join(path+'/', zip_file_name),
+        with zipfile.ZipFile(os.path.join(path + '/', zip_file_name),
                              "r") as zip_obj:
             zip_obj.extractall(
-                os.path.join(path+'/',
+                os.path.join(path + '/',
                              os.path.splitext(zip_file_name)[0]))
 
     # 选取文件
@@ -183,16 +183,16 @@ class FileAES:
             if name != nameNow:
                 stream = self.decrypt(datas.encode('ascii'))
                 data = base64.b64decode(stream)
-                with open(os.path.join(dirs+'/', name), "wb") as new_file:
+                with open(os.path.join(dirs + '/', name), "wb") as new_file:
                     new_file.write(data)
                 name = nameNow
                 datas = ""
-            with open(os.path.join(dirs+'/', i), "rb") as f:
+            with open(os.path.join(dirs + '/', i), "rb") as f:
                 datas += f.read().decode('ascii')
-            os.remove(os.path.join(dirs+'/', i))  # 删除中间文件
+            os.remove(os.path.join(dirs + '/', i))  # 删除中间文件
         stream = self.decrypt(datas.encode('ascii'))
         data = base64.b64decode(stream)
-        with open(os.path.join(dirs+'/', name), "wb") as new_file:
+        with open(os.path.join(dirs + '/', name), "wb") as new_file:
             new_file.write(data)
             name = nameNow
 
@@ -202,7 +202,7 @@ class FileAES:
             stream = self.decrypt(f.read())
             data = base64.b64decode(stream)
             name = os.path.splitext(dirs_file_name)[0]
-            with open(os.path.join(dirs+'/', name), "wb") as new_file:
+            with open(os.path.join(dirs + '/', name), "wb") as new_file:
                 new_file.write(data)
 
     # 加密文件
@@ -249,6 +249,9 @@ class FileAES:
         # 把密码进行补全，得到16、24或32位
         str = self.encrypt_string.get()
         length = len(str)
+        if length == 0:
+            messagebox.showinfo('提示', '请输入压缩密码')
+            return 0
         # 超出32位自动截取前32位
         self.keys = str.rjust(
             16, '1') if length > 0 and length < 16 else str.rjust(
@@ -258,6 +261,8 @@ class FileAES:
             # 判断压缩名称是否为空，为空制时间戳为包名
             if self.folder_name.get() == '':
                 self.folder_name.set(time.strftime("%Y.%m.%d-%H-%M-%S"))
+            else:
+                self.folder_name.set(self.folder_name.get().replace(' ', ''))
             self.zip_file_name = self.folder_name.get() + ".zip"
             self.zip_file_list = []
             self.zip_dir_list = []
@@ -293,10 +298,10 @@ class FileAES:
                 self.zip_dir_list = []
             if handler_type == 'pack':
                 self.my_zip_function(
-                    os.path.join(self.zip_path+'/', self.zip_file_name),
+                    os.path.join(self.zip_path + '/', self.zip_file_name),
                     self.zip_file_list, self.zip_dir_list)
                 # self.my_traversal_zip_function(self.zip_file_name)
-                folders = os.path.join(self.zip_path+'/',
+                folders = os.path.join(self.zip_path + '/',
                                        os.path.splitext(self.zip_file_name)[0])
                 if not os.path.isdir(folders):
                     os.makedirs(folders)
