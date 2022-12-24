@@ -1,5 +1,6 @@
 import os
 import base64
+import shutil
 import zipfile
 import time
 import tkinter.filedialog
@@ -189,8 +190,8 @@ class FileAES:
             with open(os.path.join(dirs + '/', i), "rb") as f:
                 datas += f.read().decode('ascii')
             os.remove(os.path.join(dirs + '/', i))  # 删除中间文件
-        stream = self.decrypt(datas.encode('ascii'))
-        data = base64.b64decode(stream)
+        stream = self.decrypt(datas.encode('ascii'))  # 把解密后的内容存入stream，准备写入文件
+        data = base64.b64decode(stream)  # 对二进制文件转码
         with open(os.path.join(dirs + '/', name), "wb") as new_file:
             new_file.write(data)
             name = nameNow
@@ -275,19 +276,34 @@ class FileAES:
                 if os.path.splitext(file_path)[1] == '.zip':
                     handler_type = 'unpack'
                     dirs = os.path.join(path + '/', os.path.splitext(name)[0])
+                    folder_exist_flag = 1
                     if not os.path.exists(dirs):
+                        # 文件夹不存在
                         os.mkdir(dirs)
+                        folder_exist_flag = 0
                         # os.makedirs(dirs)
-                        self.my_unzip_function(name, path)
-                        file_list = os.listdir(dirs)
-                        file_list.sort()  # 对数据进行排序 正序
-                        # for dirs_file_name in file_list:
-                        #     dirs_file_path = os.path.join(dirs, dirs_file_name)
-                        #     self.deciphering_folder(dirs_file_path, dirs_file_name,
-                        #                             dirs)
+                    self.my_unzip_function(name, path)
+                    # if os.path.isfile(os.path.join(dirs + '/', name)):
+                    # os.remove(os.path.join(dirs + '/', name))  # 默认剔除已存在的源文件
+                    file_list = os.listdir(dirs)
+                    file_list.sort()  # 对数据进行排序 正序
+                    for index in range(len(file_list)):
+                        # 对文件夹下的原始文件过滤，不计入分片文件
+                        if os.path.splitext(
+                                re.sub(r'.skj\d+$', '.skj', file_list[index])
+                        )[1] != self.compressPostfix:
+                            del file_list[index]
+                            break
+                            # index -= 1
+                    # for dirs_file_name in file_list:
+                    #     dirs_file_path = os.path.join(dirs, dirs_file_name)
+                    #     self.deciphering_folder(dirs_file_path, dirs_file_name,
+                    #                             dirs)
                     try:
                         self.deciphering_file(file_list, dirs)
                     except:
+                        if folder_exist_flag == 0:
+                            shutil.rmtree(dirs)
                         messagebox.showerror('提示', '密码错误')
                         break
                     messagebox.showinfo('提示', '解压完成')
@@ -319,6 +335,7 @@ class FileAES:
             self.text.delete('1.0', END)
             self.text.insert(INSERT, "您没有选择任何文件")
             self.text.configure(state='disabled')  # 上锁
+        self.encrypt_string.set("")
 
 
 if __name__ == '__main__':

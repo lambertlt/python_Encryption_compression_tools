@@ -316,6 +316,7 @@ class FileAES:
             self.text.delete('1.0', END)
             self.text.insert(INSERT, "您没有选择任何文件")
             self.text.configure(state='disabled')  # 上锁
+        self.encrypt_string.set("")
 
 
 if __name__ == '__main__':
